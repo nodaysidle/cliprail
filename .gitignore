@@ -1,0 +1,23 @@
+# SwiftPM
+.build/
+.swiftpm/
+
+# Xcode
+*.xcodeproj
+*.xcworkspace
+DerivedData/
+xcuserdata/
+
+# Generated artifacts
+Sources/ClipRail/Resources/AppIcon.icns
+build/
+*.app
+.dmg
+*.pkg
+
+# macOS
+.DS_Store
+*.swp
+
+# Packaging
+dist/
