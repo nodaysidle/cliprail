@@ -34,11 +34,11 @@ private struct AboutTab: View {
                 .fontWeight(.bold)
                 .foregroundColor(.primary)
 
-            Text("Version 1.0.0 (Slice 1)")
+            Text("Version \(ClipRailConstants.appVersion) (build \(ClipRailConstants.appBuild))")
                 .font(.caption)
                 .foregroundColor(.secondary)
 
-            Text("Menu bar clipboard history.\nLocal only. No network. No images.")
+            Text("Menu bar clipboard history.\nLocal only. Text only. No network.")
                 .font(.body)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)

@@ -7,6 +7,8 @@ enum ClipRailConstants {
     static let dedupeWindow: TimeInterval = 60
     static let pollInterval: TimeInterval = 1.0
     static let appName = "ClipRail"
+    static let appVersion = "1.2.0"
+    static let appBuild = "3"
     static let bundleIdentifier = "com.nodaysidle.cliprail"
     static let userDefaultsSuiteName = "com.nodaysidle.cliprail"
     static let userDefaultsKey = "cliprail_history"
