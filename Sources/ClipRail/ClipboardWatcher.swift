@@ -40,10 +40,17 @@ final class ClipboardWatcher {
         guard currentChangeCount != lastChangeCount else { return }
         lastChangeCount = currentChangeCount
 
-        guard let newString = NSPasteboard.general.string(forType: .string),
-              ClipboardItem.isValid(newString)
-        else { return }
-
-        store.append(text: newString)
+        // Defer the pasteboard read by a short interval. On macOS the
+        // changeCount can increment before the new string is fully written,
+        // so an immediate read may return the *previous* clipboard value.
+        // A small delay lets the write settle before we capture the text.
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            try? await Task.sleep(nanoseconds: 50_000_000) // 50 ms
+            guard let newString = NSPasteboard.general.string(forType: .string),
+                  ClipboardItem.isValid(newString)
+            else { return }
+            self.store.append(text: newString)
+        }
     }
 }

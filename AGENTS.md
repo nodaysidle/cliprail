@@ -35,6 +35,13 @@ ClipRail is macOS 14+ menu bar clipboard history.
 - Identical text within 60s bumps existing row (no duplicate row)
 - Relative timestamps refresh when popover opens
 
+## Slice 3 (search + delete + pause)
+
+- Search field in the popover header filters pinned and unpinned clips live; case-insensitive contains; empty search shows all
+- Row trash button deletes one pinned or unpinned clip and persists immediately
+- Header Pause/Resume toggle stops capture while paused; changes copied while paused are not backfilled on resume
+- Slice 1/2 invariants remain required: text-only local capture, pinned survive Clear, 60s dedupe bump, relative timestamps refresh on popover open
+
 ## Delegation
 
 - **budget-scout → deepseek-architect → deep-builder → cold-auditor** for greenfield slices

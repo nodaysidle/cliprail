@@ -6,6 +6,7 @@ import AppKit
 @MainActor
 final class HistoryStore: ObservableObject {
     @Published var items: [ClipboardItem] = []
+    @Published var isPaused: Bool = false
 
     private let maxCount: Int
     private let maxPinnedCount: Int
@@ -47,7 +48,9 @@ final class HistoryStore: ObservableObject {
 
     /// Append a clip. Within the dedupe window, identical text bumps the existing row
     /// to the top of its section and refreshes the timestamp instead of adding a row.
+    /// When paused, new clipboard entries are silently dropped.
     func append(text: String, now: Date = Date()) {
+        guard !isPaused else { return }
         let sanitized = ClipboardItem.sanitize(text)
         guard !sanitized.isEmpty else { return }
 
@@ -108,11 +111,34 @@ final class HistoryStore: ObservableObject {
         save()
     }
 
+    /// Delete a single item by UUID. Works for both pinned and unpinned items.
+    func deleteItem(_ id: UUID) {
+        items.removeAll { $0.id == id }
+        save()
+    }
+
+    /// Filter display items case-insensitively. Empty or whitespace-only
+    /// queries return the unfiltered list. Preserves pinned-first ordering.
+    static func filterItems(_ items: [ClipboardItem], matching query: String) -> [ClipboardItem] {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return items }
+        return items.filter { $0.text.localizedCaseInsensitiveContains(trimmed) }
+    }
+
     /// Copy the given item's text back to the system pasteboard.
     static func copyToPasteboard(_ item: ClipboardItem) {
         let pb = NSPasteboard.general
         pb.clearContents()
         pb.setString(item.text, forType: .string)
+    }
+
+    /// Format a date as a relative timestamp string (e.g. "2m ago", "1h ago")
+    /// relative to the given anchor date. This is the pure, testable seam for
+    /// the on-appear timestamp-anchor refresh behavior used in ContentView.
+    static func formattedRelativeDate(_ date: Date, relativeTo anchor: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: date, relativeTo: anchor)
     }
 
     // MARK: - Persistence

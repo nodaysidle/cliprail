@@ -32,7 +32,16 @@ struct ClipRailApp: App {
                     model.startWatcherIfNeeded()
                 }
         } label: {
-            Image(systemName: "list.clipboard")
+            if model.store.isPaused {
+                VStack(spacing: 0) {
+                    Image(systemName: "list.clipboard")
+                        .font(.system(size: 10))
+                    Text("⏸")
+                        .font(.system(size: 6))
+                }
+            } else {
+                Image(systemName: "list.clipboard")
+            }
         }
         .menuBarExtraStyle(.window)
 

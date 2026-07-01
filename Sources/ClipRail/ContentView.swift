@@ -5,16 +5,28 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var store: HistoryStore
     @State private var timestampAnchor = Date()
+    @State private var searchText = ""
+    @FocusState private var isSearchFocused: Bool
+
+    private var filteredItems: [ClipboardItem] {
+        HistoryStore.filterItems(store.displayItems, matching: searchText)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             headerView
+
+            pauseBannerView
+
+            searchFieldView
 
             Divider()
                 .background(VoltColor.swiftUIColor.opacity(0.3))
 
             if store.displayItems.isEmpty {
                 emptyStateView
+            } else if filteredItems.isEmpty {
+                noMatchView
             } else {
                 historyListView
                     .frame(height: historyListHeight)
@@ -37,6 +49,8 @@ struct ContentView: View {
 
             Spacer()
 
+            pauseToggleButton
+
             Button(action: { store.clear() }) {
                 Text("Clear")
                     .font(.caption)
@@ -48,6 +62,57 @@ struct ContentView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
+    }
+
+    // MARK: - Pause toggle
+
+    private var pauseToggleButton: some View {
+        Button(action: { store.isPaused.toggle() }) {
+            Text(store.isPaused ? "Resume" : "Pause")
+                .font(.caption)
+                .foregroundColor(store.isPaused ? Color.orange : VoltColor.swiftUIColor)
+        }
+        .buttonStyle(.plain)
+        .help(store.isPaused ? "Resume clipboard capture" : "Pause clipboard capture")
+    }
+
+    // MARK: - Pause banner
+
+    @ViewBuilder
+    private var pauseBannerView: some View {
+        if store.isPaused {
+            HStack(spacing: 6) {
+                Image(systemName: "pause.circle.fill")
+                    .font(.system(size: 12))
+                    .foregroundColor(.orange)
+                Text("Capture paused")
+                    .font(.caption)
+                    .foregroundColor(.orange.opacity(0.8))
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+            .background(Color.orange.opacity(0.1))
+        }
+    }
+
+    // MARK: - Search field
+
+    private var searchFieldView: some View {
+        TextField("Search clips…", text: $searchText)
+            .textFieldStyle(.plain)
+            .font(.system(size: 12))
+            .foregroundColor(.white)
+            .padding(8)
+            .background(Color.white.opacity(0.08))
+            .cornerRadius(6)
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(isSearchFocused ? VoltColor.swiftUIColor : Color.clear, lineWidth: 1.5)
+            )
+            .focused($isSearchFocused)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
     }
 
     // MARK: - Empty state
@@ -70,12 +135,29 @@ struct ContentView: View {
         .background(Color.black)
     }
 
+    // MARK: - No search match state
+
+    private var noMatchView: some View {
+        VStack(spacing: 12) {
+            Spacer(minLength: 40)
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 32))
+                .foregroundColor(.gray.opacity(0.5))
+            Text("No matching clips")
+                .font(.body)
+                .foregroundColor(.gray.opacity(0.7))
+            Spacer(minLength: 40)
+        }
+        .frame(maxWidth: .infinity)
+        .background(Color.black)
+    }
+
     // MARK: - History list
 
     private var historyListView: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                ForEach(store.displayItems) { item in
+                ForEach(filteredItems) { item in
                     historyRow(item)
                     Divider()
                         .background(Color.gray.opacity(0.15))
@@ -87,7 +169,7 @@ struct ContentView: View {
     }
 
     private var historyListHeight: CGFloat {
-        min(max(CGFloat(store.displayItems.count) * 58, 120), 320)
+        min(max(CGFloat(filteredItems.count) * 58, 120), 320)
     }
 
     private func historyRow(_ item: ClipboardItem) -> some View {
@@ -123,14 +205,20 @@ struct ContentView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Copy clip: \(item.preview(maxLength: 80))")
+
+            Button(action: { store.deleteItem(item.id) }) {
+                Image(systemName: "trash")
+                    .font(.system(size: 11))
+                    .foregroundColor(.gray.opacity(0.4))
+            }
+            .buttonStyle(.plain)
+            .help("Delete clip")
         }
         .padding(.horizontal, 14)
     }
 
     private func formattedDate(_ date: Date) -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: date, relativeTo: timestampAnchor)
+        HistoryStore.formattedRelativeDate(date, relativeTo: timestampAnchor)
     }
 }
 
