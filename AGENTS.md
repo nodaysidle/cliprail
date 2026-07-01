@@ -29,10 +29,17 @@ ClipRail is macOS 14+ menu bar clipboard history.
 6. USERGUIDE.md present
 7. .gitignore excludes generated artifacts
 
+## Slice 2 (pin + 60s dedupe + relative timestamps)
+
+- Pin up to 3 clips; pinned survive Clear
+- Identical text within 60s bumps existing row (no duplicate row)
+- Relative timestamps refresh when popover opens
+
 ## Delegation
 
-- **Deep-builder** implements Slice 1, runs swift test + swift build + package_app.sh
-- **Eldio captain** does install, launch, clipboard smoke tests, and shipping gate pass/fail
+- **budget-scout → deepseek-architect → deep-builder → cold-auditor** for greenfield slices
+- **Deep-builder** implements bounded Swift changes; runs swift test + package_app.sh
+- **Eldio captain** integrates, installs, launch/smoke, shipping gate — no solo feature Swift unless fixing ship blockers
 
 ## Implementation Notes
 

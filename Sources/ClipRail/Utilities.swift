@@ -3,6 +3,8 @@ import Foundation
 /// Constants and helpers used across ClipRail.
 enum ClipRailConstants {
     static let maxHistoryCount = 10
+    static let maxPinnedCount = 3
+    static let dedupeWindow: TimeInterval = 60
     static let pollInterval: TimeInterval = 1.0
     static let appName = "ClipRail"
     static let bundleIdentifier = "com.nodaysidle.cliprail"

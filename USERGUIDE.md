@@ -1,6 +1,6 @@
 # ClipRail User Guide
 
-**Version:** 1.0.0 (Slice 1)
+**Version:** 1.1.0 (Slice 2)
 **Platform:** macOS 14+
 
 ## Overview
@@ -26,8 +26,14 @@ images, files, and rich text are ignored.
 Click any clip in the history list to copy its text back to your pasteboard.
 Paste (⌘V) in any app to use it.
 
+### Pinning clips
+Click the **star** on any row to pin it (up to 3 pins). Pinned clips stay at the top and survive **Clear**.
+
 ### Clearing history
-Click the **Clear** button in the popover header to remove all clips.
+Click **Clear** to remove unpinned clips only. Pinned clips are kept until you unpin them.
+
+### Duplicate copies
+If you copy the same text again within 60 seconds, ClipRail bumps the existing row to the top instead of adding a duplicate.
 
 ### Settings
 Access Settings via the system menu bar icon's context menu or the app menu 
@@ -35,7 +41,8 @@ Access Settings via the system menu bar icon's context menu or the app menu
 
 ## Limits
 
-- **10 clips maximum.** Older clips are removed when new ones arrive.
+- **10 unpinned clips maximum**, plus up to **3 pinned** clips.
+- **60-second dedupe window** for identical text.
 - **Text only.** No images, files, or rich media in this version.
 - **No auto-paste.** Clips are only re-copied; you must paste manually.
 - **Local only.** No network access, no cloud sync.

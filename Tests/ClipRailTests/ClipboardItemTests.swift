@@ -59,15 +59,24 @@ final class ClipboardItemTests: XCTestCase {
     }
 
     func testCodableRoundtrip() throws {
-        let item = ClipboardItem(text: "test text")
+        let item = ClipboardItem(text: "test text", isPinned: true)
         let data = try JSONEncoder().encode(item)
         let decoded = try JSONDecoder().decode(ClipboardItem.self, from: data)
         XCTAssertEqual(decoded.id, item.id)
         XCTAssertEqual(decoded.text, item.text)
-        // Date encoding may have slight floating point differences
+        XCTAssertTrue(decoded.isPinned)
         XCTAssertEqual(decoded.copiedAt.timeIntervalSinceReferenceDate,
                        item.copiedAt.timeIntervalSinceReferenceDate,
                        accuracy: 0.001)
+    }
+
+    func testCodableDefaultsMissingPinField() throws {
+        let json = """
+        {"id":"\(UUID().uuidString)","text":"legacy","copiedAt":0}
+        """
+        let data = Data(json.utf8)
+        let decoded = try JSONDecoder().decode(ClipboardItem.self, from: data)
+        XCTAssertFalse(decoded.isPinned)
     }
 
     func testEquatable() {

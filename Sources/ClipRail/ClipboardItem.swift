@@ -6,11 +6,30 @@ struct ClipboardItem: Identifiable, Codable, Equatable, Sendable {
     let id: UUID
     let text: String
     let copiedAt: Date
+    let isPinned: Bool
 
-    init(id: UUID = UUID(), text: String, copiedAt: Date = Date()) {
+    init(
+        id: UUID = UUID(),
+        text: String,
+        copiedAt: Date = Date(),
+        isPinned: Bool = false
+    ) {
         self.id = id
         self.text = ClipboardItem.sanitize(text)
         self.copiedAt = copiedAt
+        self.isPinned = isPinned
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, text, copiedAt, isPinned
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        text = try container.decode(String.self, forKey: .text)
+        copiedAt = try container.decode(Date.self, forKey: .copiedAt)
+        isPinned = try container.decodeIfPresent(Bool.self, forKey: .isPinned) ?? false
     }
 
     /// Strips control characters except newline (\n) and tab (\t),

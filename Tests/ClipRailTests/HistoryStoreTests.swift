@@ -9,7 +9,6 @@ final class HistoryStoreTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
-        // Use a temporary suite to avoid polluting real defaults
         suiteName = "com.nodaysidle.cliprail.tests.\(UUID().uuidString)"
         suite = UserDefaults(suiteName: suiteName)
         suite.removePersistentDomain(forName: suiteName)
@@ -22,8 +21,18 @@ final class HistoryStoreTests: XCTestCase {
         try await super.tearDown()
     }
 
-    private func makeStore(maxCount: Int = ClipRailConstants.maxHistoryCount) -> HistoryStore {
-        HistoryStore(maxCount: maxCount, userDefaults: suite, storageKey: storageKey)
+    private func makeStore(
+        maxCount: Int = ClipRailConstants.maxHistoryCount,
+        maxPinnedCount: Int = ClipRailConstants.maxPinnedCount,
+        dedupeWindow: TimeInterval = ClipRailConstants.dedupeWindow
+    ) -> HistoryStore {
+        HistoryStore(
+            maxCount: maxCount,
+            maxPinnedCount: maxPinnedCount,
+            dedupeWindow: dedupeWindow,
+            userDefaults: suite,
+            storageKey: storageKey
+        )
     }
 
     // MARK: - Append
@@ -42,48 +51,108 @@ final class HistoryStoreTests: XCTestCase {
         XCTAssertEqual(store.items.count, 0)
     }
 
-    func testAppendDeduplicatesByText() {
-        let store = makeStore()
-        store.append(text: "first")
-        store.append(text: "second")
-        store.append(text: "first") // duplicate
-        XCTAssertEqual(store.items.count, 2)
-        // Most recent should be "first" at index 0
-        XCTAssertEqual(store.items[0].text, "first")
-        XCTAssertEqual(store.items[1].text, "second")
+    func testAppendDeduplicatesWithinWindow() {
+        let store = makeStore(dedupeWindow: 60)
+        let t0 = Date(timeIntervalSince1970: 1_700_000_000)
+        store.append(text: "first", now: t0)
+        store.append(text: "second", now: t0.addingTimeInterval(5))
+        store.append(text: "first", now: t0.addingTimeInterval(10))
+
+        XCTAssertEqual(store.unpinnedItems.count, 2)
+        XCTAssertEqual(store.unpinnedItems[0].text, "first")
+        XCTAssertEqual(store.unpinnedItems[1].text, "second")
+        XCTAssertEqual(store.unpinnedItems[0].copiedAt, t0.addingTimeInterval(10))
     }
 
-    func testAppendNewestFirst() {
+    func testAppendDoesNotDeduplicateOutsideWindow() {
+        let store = makeStore(dedupeWindow: 60)
+        let t0 = Date(timeIntervalSince1970: 1_700_000_000)
+        store.append(text: "first", now: t0)
+        store.append(text: "first", now: t0.addingTimeInterval(61))
+
+        XCTAssertEqual(store.unpinnedItems.count, 2)
+        XCTAssertEqual(store.unpinnedItems.map(\.text), ["first", "first"])
+    }
+
+    func testAppendNewestFirstAmongUnpinned() {
         let store = makeStore()
-        store.append(text: "A")
-        store.append(text: "B")
-        store.append(text: "C")
-        XCTAssertEqual(store.items.map(\.text), ["C", "B", "A"])
+        let t0 = Date(timeIntervalSince1970: 1_700_000_000)
+        store.append(text: "A", now: t0)
+        store.append(text: "B", now: t0.addingTimeInterval(1))
+        store.append(text: "C", now: t0.addingTimeInterval(2))
+        XCTAssertEqual(store.unpinnedItems.map(\.text), ["C", "B", "A"])
     }
 
     // MARK: - Max Count
 
-    func testMaxCountTrimsHistory() {
+    func testMaxCountTrimsUnpinnedOnly() {
         let store = makeStore(maxCount: 3)
-        store.append(text: "1")
-        store.append(text: "2")
-        store.append(text: "3")
-        store.append(text: "4")
-        XCTAssertEqual(store.items.count, 3)
-        XCTAssertEqual(store.items.map(\.text), ["4", "3", "2"])
+        let t0 = Date(timeIntervalSince1970: 1_700_000_000)
+        for i in 1...4 {
+            store.append(text: "\(i)", now: t0.addingTimeInterval(Double(i)))
+        }
+        XCTAssertEqual(store.unpinnedItems.count, 3)
+        XCTAssertEqual(store.unpinnedItems.map(\.text), ["4", "3", "2"])
     }
 
-    func testMaxCountObservesConfigurableLimit() {
-        let store = makeStore(maxCount: 5)
-        for i in 1...10 {
-            store.append(text: "item\(i)")
-        }
-        XCTAssertEqual(store.items.count, 5)
+    func testPinnedItemsDoNotCountTowardUnpinnedLimit() {
+        let store = makeStore(maxCount: 2, maxPinnedCount: 2)
+        let t0 = Date(timeIntervalSince1970: 1_700_000_000)
+        store.append(text: "pin-me", now: t0)
+        _ = store.togglePin(store.items[0])
+        store.append(text: "one", now: t0.addingTimeInterval(1))
+        store.append(text: "two", now: t0.addingTimeInterval(2))
+        store.append(text: "three", now: t0.addingTimeInterval(3))
+
+        XCTAssertEqual(store.pinnedItems.count, 1)
+        XCTAssertEqual(store.unpinnedItems.count, 2)
+        XCTAssertEqual(store.unpinnedItems.map(\.text), ["three", "two"])
+    }
+
+    // MARK: - Pin
+
+    func testTogglePinAddsAndRemovesPin() {
+        let store = makeStore()
+        store.append(text: "pinned")
+        let item = store.items[0]
+        XCTAssertTrue(store.togglePin(item))
+        XCTAssertTrue(store.pinnedItems[0].isPinned)
+
+        XCTAssertTrue(store.togglePin(store.pinnedItems[0]))
+        XCTAssertEqual(store.pinnedItems.count, 0)
+        XCTAssertEqual(store.unpinnedItems[0].text, "pinned")
+    }
+
+    func testMaxPinnedCountEnforced() {
+        let store = makeStore(maxPinnedCount: 2)
+        let t0 = Date(timeIntervalSince1970: 1_700_000_000)
+        store.append(text: "a", now: t0)
+        store.append(text: "b", now: t0.addingTimeInterval(1))
+        store.append(text: "c", now: t0.addingTimeInterval(2))
+
+        XCTAssertTrue(store.togglePin(store.unpinnedItems[0]))
+        XCTAssertTrue(store.togglePin(store.unpinnedItems[0]))
+        XCTAssertFalse(store.togglePin(store.unpinnedItems[0]))
+        XCTAssertEqual(store.pinnedItems.count, 2)
+    }
+
+    func testPinnedItemSurvivesClear() {
+        let store = makeStore()
+        let t0 = Date(timeIntervalSince1970: 1_700_000_000)
+        store.append(text: "keep", now: t0)
+        store.append(text: "drop", now: t0.addingTimeInterval(1))
+        _ = store.togglePin(store.items.first { $0.text == "keep" }!)
+
+        store.clear()
+
+        XCTAssertEqual(store.items.count, 1)
+        XCTAssertEqual(store.items[0].text, "keep")
+        XCTAssertTrue(store.items[0].isPinned)
     }
 
     // MARK: - Clear
 
-    func testClearRemovesAllItems() {
+    func testClearRemovesOnlyUnpinnedItems() {
         let store = makeStore()
         store.append(text: "A")
         store.append(text: "B")
@@ -95,7 +164,6 @@ final class HistoryStoreTests: XCTestCase {
         let store = makeStore()
         store.append(text: "A")
         store.clear()
-        // Create a new store reading from same defaults
         let store2 = makeStore()
         XCTAssertEqual(store2.items.count, 0)
     }
@@ -104,19 +172,19 @@ final class HistoryStoreTests: XCTestCase {
 
     func testPersistenceRoundtrip() {
         let store1 = makeStore()
-        store1.append(text: "Persisted A")
-        store1.append(text: "Persisted B")
+        let t0 = Date(timeIntervalSince1970: 1_700_000_000)
+        store1.append(text: "Persisted A", now: t0)
+        store1.append(text: "Persisted B", now: t0.addingTimeInterval(1))
+        _ = store1.togglePin(store1.items.first { $0.text == "Persisted A" }!)
 
-        // New store with same UserDefaults/key should load saved items
         let store2 = makeStore()
         XCTAssertEqual(store2.items.count, 2)
-        XCTAssertEqual(store2.items[0].text, "Persisted B")
-        XCTAssertEqual(store2.items[1].text, "Persisted A")
+        XCTAssertEqual(store2.pinnedItems[0].text, "Persisted A")
+        XCTAssertEqual(store2.unpinnedItems[0].text, "Persisted B")
     }
 
     func testEmptyStoreDoesNotCrashOnLoad() {
         _ = makeStore()
-        // Just verifying no crash on init with empty defaults
     }
 
     // MARK: - Edge Cases
@@ -128,12 +196,12 @@ final class HistoryStoreTests: XCTestCase {
         XCTAssertEqual(store.items.count, 1)
     }
 
-    func testAppendMultipleDuplicatesInSuccession() {
-        let store = makeStore()
-        for _ in 1...5 {
-            store.append(text: "same")
+    func testAppendMultipleDuplicatesInSuccessionWithinWindow() {
+        let store = makeStore(dedupeWindow: 60)
+        let t0 = Date(timeIntervalSince1970: 1_700_000_000)
+        for offset in 0..<5 {
+            store.append(text: "same", now: t0.addingTimeInterval(Double(offset)))
         }
-        // Should always have just 1 entry for "same"
         XCTAssertEqual(store.items.count, 1)
     }
 }
