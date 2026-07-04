@@ -42,9 +42,24 @@ If you need image history, cloud sync, universal clipboard features, or automati
 
 ### Install from release
 
-1. Download `ClipRail.app.zip` from [Releases](https://github.com/nodaysidle/cliprail/releases).
-2. Unzip and move `ClipRail.app` to `/Applications`.
-3. First launch: right-click → **Open** if macOS warns about the ad-hoc signed build.
+1. Download **ClipRail-v1.2.0-macos.zip** from [Releases](https://github.com/nodaysidle/cliprail/releases).
+2. Verify your download:
+
+   > [!CAUTION]
+   > This build is ad-hoc signed and not notarized. Confirm the file before opening:
+   >
+   > | | |
+   > |---|---|
+   > | **Filename** | `ClipRail-v1.2.0-macos.zip` |
+   > | **Size** | ~164 KB |
+   > | **SHA256** | `b5c796a35795de3f247d5538292baedd5e64e595f28d6837f676c0e96d65a4d4` |
+   >
+   > ```bash
+   > shasum -a 256 ClipRail-v1.2.0-macos.zip
+   > ```
+
+3. Unzip and drag **ClipRail.app** to `/Applications`.
+4. First launch: if macOS blocks the ad-hoc signed build (expected), right-click the app in Finder → **Open**, or go to **System Settings → Privacy & Security** and click **Open Anyway**.
 
 ### Build from source
 
@@ -73,13 +88,12 @@ Full operator guide: [USERGUIDE.md](USERGUIDE.md)
 ## Build and Verify
 
 ```bash
+# Run tests
 swift test
 swift build
 ./Scripts/package_app.sh release
 ./Scripts/smoke_test.sh
 ```
-
-Release builds are ad-hoc signed for local use. They are not notarized.
 
 ---
 
@@ -92,7 +106,6 @@ Release builds are ad-hoc signed for local use. They are not notarized.
 | `Scripts/` | Package, install, smoke, and icon scripts |
 | `USERGUIDE.md` | End-user operation guide |
 | `CHANGELOG.md` | Release-facing changes |
-| `docs/internal/` | Agent boundaries and shipping gates retained for maintainers |
 
 ---
 
