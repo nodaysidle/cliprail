@@ -1,53 +1,52 @@
 # ClipRail
 
-**macOS menu bar clipboard history — local, text-only, no account.**
+**A local, text-only clipboard history for the macOS menu bar.**
 
-ClipRail keeps your last plain-text copies one click away in the menu bar. Pin important clips, search history, delete single rows, or pause capture when you need a break. Everything stays on your Mac.
+ClipRail keeps the plain-text snippets you actually reuse one click away. It is intentionally small: recent clips, pinned favorites, search, delete, pause, and re-copy — with no network access, no account, no hotkeys, and no auto-paste surprises.
 
 **Version 1.2.0** · macOS 14+ · Swift 6 · SwiftUI
 
 ---
 
-## Features
+## What You Get
 
-| Area | What you get |
-|------|----------------|
-| **History** | Last 10 unpinned text clips, newest first |
-| **Pin** | Up to 3 pinned clips that survive **Clear** |
-| **Search** | Live filter in the popover header (case-insensitive) |
-| **Delete** | Per-row trash for pinned or unpinned clips |
+| Area | Capability |
+|------|------------|
+| **History** | Last 10 unpinned plain-text clips, newest first |
+| **Pinned clips** | Up to 3 pinned clips that survive **Clear** |
+| **Search** | Live case-insensitive filter in the popover header |
+| **Delete** | Remove a single pinned or unpinned row immediately |
 | **Pause** | Stop capture temporarily; no backfill on resume |
-| **Dedupe** | Same text within 60s bumps the row instead of duplicating |
-| **Timestamps** | Relative ages refresh when you open the popover |
-| **Re-copy** | Tap a row to copy back to the pasteboard — you paste manually |
-| **Privacy** | UserDefaults only; no network, sync, or analytics |
-
-### Intentionally not included
-
-- No images, files, or rich text
-- No global hotkeys or auto-paste
-- No cloud sync or iCloud
-- No launch-at-login (yet)
+| **Dedupe** | Re-copying the same text within 60 seconds bumps the row |
+| **Timestamps** | Relative ages refresh when the popover opens |
+| **Re-copy** | Tap a row to put it back on the pasteboard; you paste manually |
+| **Privacy** | Local UserDefaults only; no network, sync, telemetry, or account |
 
 ---
 
-## Requirements
+## Privacy Boundary
 
-- macOS 14.0 (Sonoma) or later
-- Apple Silicon or Intel Mac
-- Xcode 16+ or Swift 6 toolchain (to build from source)
+ClipRail is deliberately boring about data.
+
+- Plain text only.
+- Local storage only.
+- No URLSession, sockets, telemetry, analytics, or sync.
+- No microphone, camera, Accessibility, or global hotkey permissions.
+- No auto-paste. ClipRail only re-copies; you decide where to paste.
+
+If you need image history, cloud sync, universal clipboard features, or automation hooks, this product is intentionally not doing that.
 
 ---
 
-## Install
+## Quick Start
 
-### Option A — GitHub Release (recommended)
+### Install from release
 
-1. Download **ClipRail.app.zip** from [Releases](https://github.com/nodaysidle/cliprail/releases).
-2. Unzip and drag **ClipRail.app** to `/Applications`.
-3. First launch: right-click → **Open** if Gatekeeper blocks the ad-hoc signed build (see [Signing](#signing) below).
+1. Download `ClipRail.app.zip` from [Releases](https://github.com/nodaysidle/cliprail/releases).
+2. Unzip and move `ClipRail.app` to `/Applications`.
+3. First launch: right-click → **Open** if macOS warns about the ad-hoc signed build.
 
-### Option B — Build from source
+### Build from source
 
 ```bash
 git clone https://github.com/nodaysidle/cliprail.git
@@ -55,74 +54,45 @@ cd cliprail
 
 swift test
 ./Scripts/package_app.sh release
-./Scripts/install_app.sh   # optional: copies to /Applications and launches
+./Scripts/install_app.sh
 ```
-
----
-
-## Usage
-
-1. **Launch** — ClipRail lives in the menu bar (clipboard icon).
-2. **Copy** — Any plain-text ⌘C appears in the list within ~1 second.
-3. **Re-use** — Click a row to re-copy; paste with ⌘V in your target app.
-4. **Search** — Type in **Search clips…** to filter live.
-5. **Pin** — Star up to 3 clips to keep them above the list and after **Clear**.
-6. **Delete** — Trash icon removes one clip immediately.
-7. **Pause** — Header toggle stops new captures until you **Resume**.
-8. **Clear** — Removes unpinned clips only.
 
 Full operator guide: [USERGUIDE.md](USERGUIDE.md)
 
 ---
 
-## Development
+## Daily Use
+
+1. Launch ClipRail and use the menu-bar clipboard icon.
+2. Copy plain text with `⌘C` in any app.
+3. Open ClipRail to search, pin, delete, pause, clear, or re-copy clips.
+4. Click a row to re-copy it, then paste manually with `⌘V`.
+
+---
+
+## Build and Verify
 
 ```bash
-# Run tests (46 cases)
 swift test
-
-# Debug build
 swift build
-
-# Release .app bundle
 ./Scripts/package_app.sh release
-
-# Smoke test (unit + package; set INSTALL=1 for clipboard UI checks)
 ./Scripts/smoke_test.sh
 ```
 
-### Project layout
-
-```
-Sources/ClipRail/
-├── ClipRailApp.swift        # @main entry, menu bar extra
-├── ContentView.swift        # Popover UI (search, pause, list)
-├── ClipboardWatcher.swift   # Pasteboard polling
-├── ClipboardItem.swift      # Clip model
-├── HistoryStore.swift       # History, pin, dedupe, persistence
-├── SettingsScene.swift      # About / settings window
-├── Utilities.swift          # Constants (version, limits, colors)
-└── Resources/AppIcon.svg
-
-Tests/ClipRailTests/         # Store + model tests
-Scripts/                     # package, install, smoke, icon
-```
-
-Agent boundaries and shipping gates: [AGENTS.md](AGENTS.md)
+Release builds are ad-hoc signed for local use. They are not notarized.
 
 ---
 
-## Signing
+## Repository Map
 
-Release builds are **ad-hoc signed** (`codesign --sign -`). They are fine for local development and personal installs. They are **not notarized** — other Macs may show Gatekeeper warnings until you allow the app in System Settings → Privacy & Security.
-
----
-
-## Privacy
-
-- Clipboard history is stored in **local UserDefaults** (`com.nodaysidle.cliprail`).
-- No URLSession, no sockets, no telemetry.
-- No microphone, camera, or accessibility entitlements.
+| Path | Purpose |
+|------|---------|
+| `Sources/ClipRail/` | Swift menu-bar app source |
+| `Tests/ClipRailTests/` | Store and model tests |
+| `Scripts/` | Package, install, smoke, and icon scripts |
+| `USERGUIDE.md` | End-user operation guide |
+| `CHANGELOG.md` | Release-facing changes |
+| `docs/internal/` | Agent boundaries and shipping gates retained for maintainers |
 
 ---
 
@@ -130,8 +100,6 @@ Release builds are **ad-hoc signed** (`codesign --sign -`). They are fine for lo
 
 See [CHANGELOG.md](CHANGELOG.md).
 
----
-
 ## License
 
-Proprietary. All rights reserved. © NODAYSIDLE.
+Proprietary — NODAYSIDLE.
