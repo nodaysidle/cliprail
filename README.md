@@ -1,72 +1,64 @@
 # ClipRail
 
-**A local, text-only clipboard history for the macOS menu bar.**
+> A local, text-only clipboard history for the macOS menu bar.
 
-ClipRail keeps the plain-text snippets you actually reuse one click away. It is intentionally small: recent clips, pinned favorites, search, delete, pause, and re-copy — with no network access, no account, no hotkeys, and no auto-paste surprises.
+ClipRail keeps the plain-text snippets you actually reuse one click away. Recent clips, pinned favorites, search, delete, pause, and re-copy — with no network access, no account, and no auto-paste surprises.
 
 **Version 1.2.0** · macOS 14+ · Swift 6 · SwiftUI
 
----
+## Overview
 
-## What You Get
+ClipRail is a focused menu-bar utility for plain-text clipboard reuse. It is intentionally small and deliberately boring about data: plain text only, local storage only, no network.
+
+## Features
 
 | Area | Capability |
 |------|------------|
-| **History** | Last 10 unpinned plain-text clips, newest first |
-| **Pinned clips** | Up to 3 pinned clips that survive **Clear** |
-| **Search** | Live case-insensitive filter in the popover header |
-| **Delete** | Remove a single pinned or unpinned row immediately |
-| **Pause** | Stop capture temporarily; no backfill on resume |
-| **Dedupe** | Re-copying the same text within 60 seconds bumps the row |
-| **Timestamps** | Relative ages refresh when the popover opens |
-| **Re-copy** | Tap a row to put it back on the pasteboard; you paste manually |
-| **Privacy** | Local UserDefaults only; no network, sync, telemetry, or account |
+| History | Last 10 unpinned plain-text clips, newest first |
+| Pinned clips | Up to 3 pinned clips that survive Clear |
+| Search | Live case-insensitive filter in the popover header |
+| Delete | Remove a single pinned or unpinned row immediately |
+| Pause | Stop capture temporarily; no backfill on resume |
+| Dedupe | Re-copying the same text within 60 seconds bumps the row |
+| Timestamps | Relative ages refresh when the popover opens |
+| Re-copy | Tap a row to put it back on the pasteboard; you paste manually |
+| Privacy | Local UserDefaults only; no network, sync, telemetry, or account |
 
----
+## Privacy
 
-## Privacy Boundary
+- Plain text only
+- Local storage only
+- No URLSession, sockets, telemetry, analytics, or sync
+- No microphone, camera, Accessibility, or global hotkey permissions
+- No auto-paste — ClipRail only re-copies; you decide where to paste
 
-ClipRail is deliberately boring about data.
+If you need image history, cloud sync, universal clipboard, or automation hooks, this product is intentionally not doing that.
 
-- Plain text only.
-- Local storage only.
-- No URLSession, sockets, telemetry, analytics, or sync.
-- No microphone, camera, Accessibility, or global hotkey permissions.
-- No auto-paste. ClipRail only re-copies; you decide where to paste.
+## Installation
 
-If you need image history, cloud sync, universal clipboard features, or automation hooks, this product is intentionally not doing that.
+### Download
 
----
+Download **ClipRail-v1.2.0-macos.zip** from [Releases](https://github.com/nodaysidle/cliprail/releases).
 
-## Quick Start
+Verify your download:
 
-### Install from release
+| | |
+|---|---|
+| Filename | `ClipRail-v1.2.0-macos.zip` |
+| Size | ~164 KB |
+| SHA256 | `b5c796a35795de3f247d5538292baedd5e64e595f28d6837f676c0e96d65a4d4` |
 
-1. Download **ClipRail-v1.2.0-macos.zip** from [Releases](https://github.com/nodaysidle/cliprail/releases).
-2. Verify your download:
+```bash
+shasum -a 256 ClipRail-v1.2.0-macos.zip
+```
 
-   > [!CAUTION]
-   > This build is ad-hoc signed and not notarized. Confirm the file before opening:
-   >
-   > | | |
-   > |---|---|
-   > | **Filename** | `ClipRail-v1.2.0-macos.zip` |
-   > | **Size** | ~164 KB |
-   > | **SHA256** | `b5c796a35795de3f247d5538292baedd5e64e595f28d6837f676c0e96d65a4d4` |
-   >
-   > ```bash
-   > shasum -a 256 ClipRail-v1.2.0-macos.zip
-   > ```
-
-3. Unzip and drag **ClipRail.app** to `/Applications`.
-4. First launch: if macOS blocks the ad-hoc signed build (expected), right-click the app in Finder → **Open**, or go to **System Settings → Privacy & Security** and click **Open Anyway**.
+Unzip and drag **ClipRail.app** to `/Applications`. On first launch, if macOS blocks the ad-hoc signed build, right-click the app in Finder → **Open**, or go to **System Settings → Privacy & Security** and click **Open Anyway**.
 
 ### Build from source
 
 ```bash
 git clone https://github.com/nodaysidle/cliprail.git
 cd cliprail
-
 swift test
 ./Scripts/package_app.sh release
 ./Scripts/install_app.sh
@@ -74,30 +66,23 @@ swift test
 
 Full operator guide: [USERGUIDE.md](USERGUIDE.md)
 
----
-
-## Daily Use
+## Usage
 
 1. Launch ClipRail and use the menu-bar clipboard icon.
 2. Copy plain text with `⌘C` in any app.
 3. Open ClipRail to search, pin, delete, pause, clear, or re-copy clips.
 4. Click a row to re-copy it, then paste manually with `⌘V`.
 
----
-
-## Build and Verify
+## Development
 
 ```bash
-# Run tests
 swift test
 swift build
 ./Scripts/package_app.sh release
 ./Scripts/smoke_test.sh
 ```
 
----
-
-## Repository Map
+## Project Structure
 
 | Path | Purpose |
 |------|---------|
@@ -107,11 +92,13 @@ swift build
 | `USERGUIDE.md` | End-user operation guide |
 | `CHANGELOG.md` | Release-facing changes |
 
----
+## Status
 
-## Changelog
+Active — v1.2.0. Ad-hoc signed, not notarized.
 
-See [CHANGELOG.md](CHANGELOG.md).
+## Contributing
+
+This repository is not currently accepting external contributions.
 
 ## License
 
