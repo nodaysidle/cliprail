@@ -1,3 +1,5 @@
+<img src=".github/social-preview.png" alt="ClipRail — NODAYSIDLE" width="100%">
+
 # ClipRail
 
 > A local, text-only clipboard history for the macOS menu bar.
