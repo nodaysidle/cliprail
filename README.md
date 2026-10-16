@@ -40,21 +40,23 @@ If you need image history, cloud sync, universal clipboard, or automation hooks,
 
 ### Download
 
-Download **ClipRail-v1.2.0-macos.zip** from [Releases](https://github.com/nodaysidle/cliprail/releases).
+Download [`ClipRail-1.2.0.dmg`](https://github.com/nodaysidle/cliprail/releases/download/v1.2.0-dmg.20260727/ClipRail-1.2.0.dmg) ([SHA-256 checksum](https://github.com/nodaysidle/cliprail/releases/download/v1.2.0-dmg.20260727/ClipRail-1.2.0.dmg.sha256)) from the [v1.2.0-dmg.20260727 release](https://github.com/nodaysidle/cliprail/releases/tag/v1.2.0-dmg.20260727) (Latest, Apple Silicon).
 
 Verify your download:
 
 | | |
 |---|---|
-| Filename | `ClipRail-v1.2.0-macos.zip` |
-| Size | ~164 KB |
-| SHA256 | `b5c796a35795de3f247d5538292baedd5e64e595f28d6837f676c0e96d65a4d4` |
+| Filename | `ClipRail-1.2.0.dmg` |
+| Size | ~195 KB |
+| SHA256 | `a83120148c67d7a33fb191ae2a373f237c80313b4e584471db29aae464115c0d` |
 
 ```bash
-shasum -a 256 ClipRail-v1.2.0-macos.zip
+shasum -a 256 ClipRail-1.2.0.dmg
+# or, with the .sha256 file in the same folder:
+shasum -a 256 -c ClipRail-1.2.0.dmg.sha256
 ```
 
-Unzip and drag **ClipRail.app** to `/Applications`. On first launch, if macOS blocks the ad-hoc signed build, right-click the app in Finder → **Open**, or go to **System Settings → Privacy & Security** and click **Open Anyway**.
+Open the DMG and drag **ClipRail.app** to `/Applications`. On first launch, if macOS blocks the ad-hoc signed build, right-click the app in Finder → **Open**, or go to **System Settings → Privacy & Security** and click **Open Anyway**.
 
 ### Build from source
 
