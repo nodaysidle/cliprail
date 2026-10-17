@@ -2,6 +2,8 @@
 
 All notable changes to ClipRail are documented here.
 
+> **About the `v1.2.1` tag:** `v1.2.1` ("NODAYSIDLE theme fleet v1.2.1") is a theme-fleet tag with no downloadable assets. It is not a ClipRail 1.2.1 app release. The downloadable build is **ClipRail 1.2.0** (`ClipRail-1.2.0.dmg` and `ClipRail-1.2.0.dmg.sha256`) under release [`v1.2.0-dmg.20260727`](https://github.com/nodaysidle/cliprail/releases/tag/v1.2.0-dmg.20260727). Both tags point at the same commit (`33fd0b9`).
+
 ## [1.2.0] — 2026-07-01
 
 ### Added
