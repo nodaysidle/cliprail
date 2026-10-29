@@ -6,6 +6,8 @@
 
 ClipRail keeps the plain-text snippets you actually reuse one click away. Recent clips, pinned favorites, search, delete, pause, and re-copy — with no network access, no account, and no auto-paste surprises.
 
+<img src="docs/demo.gif" alt="ClipRail icon with the README tagline, then five feature lines: History, Pinned clips, Search, Re-copy, Privacy" width="100%">
+
 **Version 1.2.0** · macOS 14+ · Swift 6 · SwiftUI
 
 ## Overview
